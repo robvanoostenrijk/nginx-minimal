@@ -1,4 +1,4 @@
-==== nginx-minimal ====
+#### nginx-minimal ####
 
 Minimal static compiled nginx with:
 

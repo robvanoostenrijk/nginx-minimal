@@ -139,7 +139,7 @@ RUN	set -x && \
 		--add-module=/build/headers-more-nginx-module-${NGINX_MORE_HEADERS_VERSION} \
 		--add-module=/build/njs-${NGINX_NJS_VERSION}/nginx \
 		--add-module=/build/echo-nginx-module-${NGINX_ECHO_VERSION} && \
-	CC=/usr/bin/clang make install && \
+	CC=/usr/bin/clang make -j "$(getconf _NPROCESSORS_ONLN)" install && \
 	strip /opt/nginx/sbin/nginx && \
 	file /opt/nginx/sbin/nginx && \
 	mkdir -p /opt/nginx/var/client_body_temp /opt/nginx/var/proxy_temp && \
