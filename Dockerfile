@@ -4,8 +4,7 @@ FROM alpine:latest AS build
 
 ARG NGINX_VERSION
 
-ENV	OPENSSL_VERSION="1.1.1c" \
-	PCRE_VERSION="8.43" \
+ENV	PCRE_VERSION="8.43" \
 	BROTLI_VERSION="1.0.7" \
 	NGINX_BROTLI_COMMIT="8104036af9cff4b1d34f22d00ba857e2a93a243c" \
 	NGINX_CLOUDFLARE_BROTLI_COMMIT="7df1e381d7abefa53a226306057453a202cd60c2" \
@@ -16,14 +15,14 @@ ENV	OPENSSL_VERSION="1.1.1c" \
 	NGINX_NJS_VERSION="0.3.3"
 
 COPY	patches/nginx_${NGINX_VERSION}_dynamic_tls_records_spdy.patch \
-		patches/nginx_${NGINX_VERSION}_http2_spdy.patch \
-		patches/nginx_${NGINX_VERSION}_hpack_push_remove_server_header.patch \
-		/build/nginx-${NGINX_VERSION}/
+	patches/nginx_${NGINX_VERSION}_http2_spdy.patch \
+	patches/nginx_${NGINX_VERSION}_hpack_push_remove_server_header.patch \
+	/build/nginx-${NGINX_VERSION}/
 
 RUN	set -x && \
 	echo "nginx:x:1000:1000:nginx:/opt/nginx:" > /tmp/passwd && \
 	echo "nginx:x:1000:x" > /tmp/group && \
-	apk add --no-cache --virtual .build-deps \
+	apk add --no-cache \
 	clang \
 	build-base \
 	linux-headers \
@@ -32,11 +31,13 @@ RUN	set -x && \
 	perl \
 	git \
 	bash \
-#	zlib-dev \
+	openssl \
+	openssl-dev \
+	openssl-libs-static \
 	--repository=http://dl-cdn.alpinelinux.org/alpine/edge/main && \
 	mkdir -p /build && \
 	cd /build && \
-	set -- "520A9993A1C052F8 7953AC1FBC3DC8B3B292393ED5E9E43F7DF9EE8C 45F68D54BBE23FB3039B46E59766E084FB0F43D8" && \
+	set -- "520A9993A1C052F8 45F68D54BBE23FB3039B46E59766E084FB0F43D8" && \
 	gpg --batch --keyserver hkp://ha.pool.sks-keyservers.net --recv-keys $@ || \
 	gpg --batch --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys $@ || \
 	gpg --batch --keyserver hkp://pgp.mit.edu:80 --recv-keys $@ && \
@@ -67,13 +68,6 @@ RUN	set -x && \
 	curl --location --silent --output /build/pcre-${PCRE_VERSION}.tar.gz.sig https://ftp.pcre.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz.sig && \
 	gpg --verify --always-trust /build/pcre-${PCRE_VERSION}.tar.gz.sig && \
 	tar -zxf /build/pcre-${PCRE_VERSION}.tar.gz && \
-#
-#	OpenSSL library
-#
-	curl --location --silent --output /build/openssl-${OPENSSL_VERSION}.tar.gz https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz && \
-	curl --location --silent --output /build/openssl-${OPENSSL_VERSION}.tar.gz.asc https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz.asc && \
-	gpg --verify --always-trust /build/openssl-${OPENSSL_VERSION}.tar.gz.asc && \
-	tar -zxf /build/openssl-${OPENSSL_VERSION}.tar.gz && \
 #
 #	nginx_more_headers module
 #
@@ -113,12 +107,6 @@ RUN	set -x && \
 #
 	cd /build/zlib && \
 	./configure --static && \
-	make install && \
-#
-#	Compile OpenSSL
-#
-	cd /build/openssl-${OPENSSL_VERSION} && \
-	./Configure no-shared no-tests no-hw linux-x86_64 && \
 	make install && \
 #
 #	Compile PCRE
@@ -177,16 +165,16 @@ RUN	set -x && \
 	cp /build/cacert.pem /opt/nginx && \
 	rm /opt/nginx/conf/*.default /opt/nginx/conf/nginx.conf /opt/nginx/html/index.html
 
-FROM scratch
+FROM	scratch
 
-ARG NGINX_VERSION
+ARG	NGINX_VERSION
 
 LABEL	name="nginx-minimal ${NGINX_VERSION}" \
-		version="${NGINX_VERSION}" \
-		description="Static nginx compiled with clang including TLS v1.3 (OpenSSL 1.1.1c), HTTP/2, SPDY 3.1, HPACK, brotli module, njs module, more headers module, accept language module & echo module"
+	version="${NGINX_VERSION}" \
+	description="Static nginx compiled with clang including TLS v1.3 (OpenSSL 1.1.1c), HTTP/2, SPDY 3.1, HPACK, brotli module, njs module, more headers module, accept language module & echo module"
 
-COPY --from=build ["/tmp/passwd", "/tmp/group", "/etc/"]
-COPY --from=build ["/opt/nginx", "/opt/nginx"]
+COPY	--from=build ["/tmp/passwd", "/tmp/group", "/etc/"]
+COPY	--from=build ["/opt/nginx", "/opt/nginx"]
 
 ENTRYPOINT ["/opt/nginx/sbin/nginx"]
 CMD ["-g", "daemon off;"]
