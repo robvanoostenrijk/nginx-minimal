@@ -17,6 +17,7 @@ ENV	PCRE_VERSION="8.43" \
 COPY	patches/nginx_${NGINX_VERSION}_dynamic_tls_records_spdy.patch \
 	patches/nginx_${NGINX_VERSION}_http2_spdy.patch \
 	patches/nginx_${NGINX_VERSION}_hpack_push_remove_server_header.patch \
+	patches/nginx_${NGINX_VERSION}_resolver_conf_parsing.patch \
 	/build/nginx-${NGINX_VERSION}/
 
 RUN	set -x && \
@@ -121,6 +122,7 @@ RUN	set -x && \
 	patch -p1 < nginx_${NGINX_VERSION}_http2_spdy.patch && \
 	patch -p1 < nginx_${NGINX_VERSION}_hpack_push_remove_server_header.patch && \
 	patch -p1 < nginx_${NGINX_VERSION}_dynamic_tls_records_spdy.patch && \
+	patch -p1 < nginx_${NGINX_VERSION}_resolver_conf_parsing.patch && \
 	./configure \
 		--with-cc=/usr/bin/clang \
 		--with-cc-opt="-static -Wno-sign-compare -O3" \
