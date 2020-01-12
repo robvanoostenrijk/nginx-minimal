@@ -12,7 +12,7 @@ ENV	PCRE_VERSION="8.43" \
 	NGINX_ACCEPT_LANGUAGE_COMMIT="2f69842f83dac77f7d98b41a2b31b13b87aeaba7" \
 	NGINX_MORE_HEADERS_VERSION="0.33" \
 	NGINX_ECHO_VERSION="0.61" \
-	NGINX_NJS_VERSION="0.3.3"
+	NGINX_NJS_VERSION="0.3.7"
 
 COPY	patches/nginx_${NGINX_VERSION}_dynamic_tls_records_spdy.patch \
 	patches/nginx_${NGINX_VERSION}_http2_spdy.patch \
