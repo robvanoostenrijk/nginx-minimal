@@ -1,11 +1,13 @@
 #### nginx-minimal ####
 
-Minimal static compiled nginx with:
+`nginx-minimal` is a distroless [nginx](https://nginx.org) docker build.
 
-* OpenSSL 1.1.1c with TLS 1.3
+It consists of a minimal static compiled nginx with:
+
 * HTTP/2
+* Removed server headers
+* Local /etc/resolv.conf support
 * HPACK header compression support
-* SPDY 3.1
 * Cloudflare zlib
 * njs module
 * echo module
